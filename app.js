@@ -1,0 +1,215 @@
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const canvas=$('#board'),ctx=canvas.getContext('2d');
+const GM_KEY='star-gomoku-course-v2',XQ_KEY='star-xiangqi-course-v1',GO_KEY='star-go-course-v1';
+
+const GM_CURRICULUM=[
+ {emoji:'🔎',rank:'棋形侦探',title:'看见关键点',hero:'先发现危险，再抓住机会',desc:'复习连五、堵四和一步获胜。',lesson:'关键点',lessonText:'每次落子前，沿着横、竖、两条斜线各看一遍。四个方向都看完，才不会漏掉好棋。',rule:'先找“马上能赢”的位置；没有时，再找“对手马上会赢”的位置。',puzzleTitle:'胜负关键点',battle:'挑战小鸡棋手',level:'easy'},
+ {emoji:'⚡',rank:'进攻先锋',title:'连续进攻',hero:'让对手一直忙着防守',desc:'认识活三和冲四，开始思考下一步。',lesson:'活三与冲四',lessonText:'活三的两头都能继续，冲四会逼对手马上防守。高手会用一次进攻，为下一次进攻铺路。',rule:'下完以后问自己：对手挡住一边，我还能从哪里继续？',puzzleTitle:'两步连续进攻',battle:'挑战狐狸棋手',level:'medium'},
+ {emoji:'🌟',rank:'威胁魔法师',title:'双重威胁',hero:'一颗棋子，同时进攻两个方向',desc:'学习双三、四三和交叉进攻。',lesson:'一子两用',lessonText:'最厉害的棋子会同时连接两个方向。对手只能挡一次，你就能从另一个方向继续。',rule:'寻找两条棋线的交叉点，让同一颗棋子同时参加两次进攻。',puzzleTitle:'双线夹击',battle:'挑战狮子棋手',level:'hard'},
+ {emoji:'🛡️',rank:'防守队长',title:'防守反击',hero:'守住危险，还要抢回主动权',desc:'识别唯一防守点，学会带着进攻去防守。',lesson:'带刺的防守',lessonText:'只是堵住对手还不够。好的防守棋落下后，也会连接自己的棋子，让下一回合有机会反击。',rule:'先排除不能防住的点，再比较：哪一个防守点还能帮助自己的棋？',puzzleTitle:'唯一防守与反击',battle:'挑战大师狮子',level:'hard'},
+ {emoji:'👑',rank:'小小棋星',title:'棋局规划',hero:'提前想两步，像小棋手一样计划',desc:'综合运用进攻、防守和双重威胁。',lesson:'候选点思考法',lessonText:'先找三个候选点：能赢、要防、能制造双重威胁。再想对手最强的回答，最后才落子。',rule:'每步棋都用“三问”：我能赢吗？他要赢吗？哪里能一子两用？',puzzleTitle:'高手综合题',battle:'挑战星星大师',level:'hard'}
+];
+const XQ_CURRICULUM=[
+ {emoji:'🗺️',rank:'棋盘探险家',title:'棋盘与车',hero:'认识楚河汉界，开动第一辆车',desc:'知道红方先走，学会“车走直线”。',lesson:'棋盘和车',lessonText:'象棋盘有九条竖线、十条横线，中间是楚河汉界。红方先走。车像小火车，只能沿直线前进。',rule:'车走直线，能走多远都可以，但不能跳过别的棋子。',pieces:['車'],puzzleTitle:'开动车轮',battle:'第一次完整对局',level:'easy'},
+ {emoji:'🐴',rank:'灵活小骑士',title:'马和炮',hero:'学会拐弯的马，会跳打的炮',desc:'认识马腿和炮架，掌握两种特别走法。',lesson:'马走日，炮翻山',lessonText:'马走一个“日”字，但马腿被挡就不能跳。炮平时像车一样走，吃子时必须隔着一个棋子当炮架。',rule:'马走日、怕蹩腿；炮吃子时，中间必须刚好隔一个棋子。',pieces:['馬','炮'],puzzleTitle:'马炮训练营',battle:'挑战小鸡将军',level:'easy'},
+ {emoji:'🏯',rank:'王宫守护者',title:'象、仕与帅',hero:'守住九宫，保护自己的帅',desc:'学习守护棋子的活动范围。',lesson:'王宫守护队',lessonText:'帅和仕不能走出九宫。象走“田”字、不能过河；田字中心被堵住时，象也走不了。',rule:'帅走一格直线，仕走一格斜线，象走田字且不能过河。',pieces:['相','仕','帥'],puzzleTitle:'守住大本营',battle:'挑战狐狸将军',level:'medium'},
+ {emoji:'🌊',rank:'过河小勇士',title:'兵的成长',hero:'小兵过河以后，会学会左右走',desc:'认识最小却很勇敢的棋子。',lesson:'兵只向前',lessonText:'兵没过河时只能向前一步；过河以后，还能向左或向右一步。兵永远不能后退。',rule:'没过河：只向前。过河后：向前或左右。任何时候都不能后退。',pieces:['兵'],puzzleTitle:'小兵向前冲',battle:'挑战过河守卫',level:'medium'},
+ {emoji:'⚔️',rank:'将军侦察兵',title:'将军与应将',hero:'发现危险，也学会给对手出难题',desc:'认识“将军”，学习躲、挡、吃三种应对。',lesson:'将军警报',lessonText:'当对方下一步能吃到你的帅，就是“将军”。被将军时必须立刻处理：把帅移开、用棋子挡住，或吃掉进攻的棋。',rule:'听到“将军”，先找三种办法：躲开、挡住、吃掉进攻者。',pieces:['將','帥'],puzzleTitle:'解除将军警报',battle:'挑战狮子将军',level:'hard'},
+ {emoji:'👑',rank:'小小象棋手',title:'一步制胜',hero:'看准将帅，完成第一次战术胜利',desc:'综合棋子走法，寻找一击制胜。',lesson:'吃掉将帅',lessonText:'象棋的目标是把对方将帅逼到无处可逃。入门练习先从“找到一步就能吃到将帅的位置”开始。',rule:'落子前先问：我能将军吗？对方能怎么躲？我还有下一步吗？',pieces:['車','炮','帥'],puzzleTitle:'一步制胜挑战',battle:'挑战星星大将军',level:'hard'}
+];
+const GO_CURRICULUM=[
+ {emoji:'💨',rank:'气息观察员',title:'气与提子',hero:'找到棋子的气，完成第一次提子',desc:'认识交叉点、气和没有气的棋子。',lesson:'棋子的气',lessonText:'围棋下在交叉点上。棋子紧挨着的上下左右空点叫作“气”。一块棋最后一口气被堵住，就会被提走。',rule:'数气只看上下左右，不看斜线；堵住最后一口气，就能提子。',puzzleTitle:'找到最后一口气',battle:'第一次 9 路小对局',level:'easy'},
+ {emoji:'🔔',rank:'打吃小哨兵',title:'发现打吃',hero:'让对方只剩一口气',desc:'学会提前发现下一步可以提子的机会。',lesson:'什么是打吃',lessonText:'当一颗棋或一块棋只剩一口气时，就叫“被打吃”。看见打吃，就要想：下一步能不能提子？',rule:'先数对方的气。落子后只剩一口气，就是一次打吃。',puzzleTitle:'打吃警报',battle:'挑战小鸡棋手',level:'easy'},
+ {emoji:'🏃',rank:'逃生小队长',title:'逃子与接回',hero:'被打吃时，给自己的棋增加气',desc:'学习逃跑、连接和反提。',lesson:'被打吃怎么办',lessonText:'自己的棋被打吃时，可以向外逃，让它得到更多气；也可以和附近的伙伴连在一起，共享更多气。',rule:'先找最后一口气，再看往外走能增加几口新气。',puzzleTitle:'救出危险棋子',battle:'挑战狐狸棋手',level:'medium'},
+ {emoji:'🤝',rank:'连接工程师',title:'连接与切断',hero:'让伙伴手拉手，把对方分开',desc:'认识棋块，学习连接自己的棋。',lesson:'连成一块棋',lessonText:'上下左右相邻的同色棋会连成一块，共同拥有气。连接自己会更强；从中间落子，也能切断对方的联系。',rule:'自己的棋要连牢；对方想连接时，找到中间的关键点。',puzzleTitle:'连接关键点',battle:'挑战连接高手',level:'medium'},
+ {emoji:'👀',rank:'地盘设计师',title:'眼与地盘',hero:'围出安全的家，认识真正的眼',desc:'开始理解围棋为什么要围地。',lesson:'眼是棋的家',lessonText:'被同色棋包围的空点像一只“眼”。有两只真正的眼，一块棋通常就不会被吃。围住的空地也会成为地盘。',rule:'别只顾吃子：让自己的棋有空间、有眼，也是在赢棋。',puzzleTitle:'围出安全小家',battle:'挑战地盘守卫',level:'hard'},
+ {emoji:'🏝️',rank:'九路小棋手',title:'小棋盘实战',hero:'综合气、连接和地盘，完成 9 路对局',desc:'学会停一手和数子，体验完整围棋。',lesson:'围棋三问',lessonText:'每次落子前问三件事：我的棋安全吗？能攻击对方吗？这一步能帮助我围出地盘吗？双方都不想再下时，可以停一手并数子。',rule:'先照顾危险的棋，再寻找提子，最后比较哪里最能围地。',puzzleTitle:'综合手筋挑战',battle:'挑战星星岛主',level:'hard'}
+];
+
+const GM_BASES=[
+ [{black:[[2,5],[3,5],[4,5],[5,5]],white:[[3,4],[5,6],[7,7]],steps:[[6,5]],coach:'先找能马上连成五的位置。'},{black:[[3,3],[4,4],[5,5],[6,6]],white:[[3,6],[6,3],[7,4]],steps:[[7,7]],coach:'斜线也要从头数到尾。'}],
+ [{black:[[3,5],[4,5],[5,5]],white:[[4,3],[6,3],[7,7]],steps:[[6,5],[7,5]],replies:[[2,5]],coach:'第一步制造冲四；对手挡住后，从另一头完成连五。'},{black:[[5,3],[5,4],[5,5]],white:[[3,4],[7,6],[3,7]],steps:[[5,6],[5,7]],replies:[[5,2]],coach:'别急着只看这一手，要提前看见对手挡完以后的位置。'}],
+ [{black:[[3,5],[4,5],[5,3],[5,4]],white:[[3,3],[7,7],[6,8]],steps:[[5,5],[5,6]],replies:[[2,5]],coach:'找到横线和竖线的交叉点，一颗棋子同时帮助两条线。'},{black:[[3,3],[4,4],[3,7],[4,6]],white:[[7,3],[7,6],[2,5]],steps:[[5,5],[6,4]],replies:[[2,8]],coach:'两条斜线在哪里相遇？先制造双重威胁。'}],
+ [{black:[[2,5],[4,4],[5,4],[6,4]],white:[[3,5],[4,5],[5,5],[6,5]],steps:[[7,5],[7,4]],replies:[[3,6]],coach:'白棋只差一步。先找到唯一防守点，再顺势从旁边反击。'},{black:[[5,2],[4,6],[6,6]],white:[[5,3],[5,4],[5,5],[3,7]],steps:[[5,6],[7,6]],replies:[[3,6]],coach:'先封住竖线危险，再观察自己的横线。'}],
+ [{black:[[2,5],[3,5],[4,4],[5,3],[6,6]],white:[[4,5],[5,5],[3,3],[7,7]],steps:[[5,4],[6,4]],replies:[[6,5]],coach:'同时检查进攻、防守和交叉点。这一题要连续走对两步。'},{black:[[3,4],[4,4],[5,3],[5,5],[6,6]],white:[[3,5],[4,5],[6,4],[7,3]],steps:[[5,4],[5,6]],replies:[[2,4]],coach:'先想对手最强的回答，再选择不会失去主动的一步。'}]
+];
+const gmTransforms=[([x,y])=>[x,y],([x,y])=>[10-y,x],([x,y])=>[10-x,y]];
+function gmPuzzle(stage,index){const b=GM_BASES[stage][index%2],tf=gmTransforms[Math.floor(index/2)%3],map=(a=[])=>a.map(tf);return{...b,black:map(b.black),white:map(b.white),steps:map(b.steps),replies:map(b.replies)}}
+
+const P=(t,c,y,x)=>({t,c,y,x});
+const XQ_PUZZLES=[
+ [
+  {pieces:[P('r','r',9,0),P('p','b',4,0),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[9,0],to:[4,0],coach:'选中红车，沿直线吃掉黑卒。'},
+  {pieces:[P('r','r',9,8),P('p','b',5,8),P('k','r',9,4),P('k','b',0,3)],from:[9,8],to:[5,8],coach:'车可以走很远，只要中间没有棋子。'},
+  {pieces:[P('r','r',7,2),P('p','b',7,6),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[7,2],to:[7,6],coach:'同一横线上没有阻挡，车可以横着吃子。'},
+  {pieces:[P('r','r',8,1),P('p','r',5,1),P('k','r',9,4),P('k','b',0,3)],from:[8,1],to:[6,1],coach:'红兵挡住了路，车要停在它前面。'}
+ ],
+ [
+  {pieces:[P('n','r',9,1),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[9,1],to:[7,2],coach:'马走一个“日”字：两格再拐一格。'},
+  {pieces:[P('n','r',7,4),P('p','b',5,5),P('k','r',9,4),P('k','b',0,3)],from:[7,4],to:[5,5],coach:'这次让马跳过去吃掉黑卒。'},
+  {pieces:[P('c','r',7,1),P('p','r',5,1),P('p','b',3,1),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[7,1],to:[3,1],coach:'红兵是炮架。隔着刚好一颗棋，炮就能吃子。'},
+  {pieces:[P('c','r',7,7),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[7,7],to:[4,7],coach:'炮不吃子时和车一样，沿直线走。'}
+ ],
+ [
+  {pieces:[P('b','r',9,2),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[9,2],to:[7,4],coach:'相走一个“田”字，中心没有被堵住。'},
+  {pieces:[P('b','r',9,6),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[9,6],to:[7,4],coach:'相不能过河，这一步仍在自己的半边。'},
+  {pieces:[P('a','r',9,3),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[9,3],to:[8,4],coach:'仕在九宫里斜着走一格。'},
+  {pieces:[P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[9,4],to:[9,5],coach:'帅只能在九宫里沿直线走一格。'}
+ ],
+ [
+  {pieces:[P('p','r',6,0),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[6,0],to:[5,0],coach:'还没过河的兵，只能向前一步。'},
+  {pieces:[P('p','r',4,2),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[4,2],to:[4,3],coach:'这个兵已经过河，可以向旁边走一步。'},
+  {pieces:[P('p','r',3,6),P('p','b',2,6),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[3,6],to:[2,6],coach:'兵勇敢向前，吃掉挡路的黑卒。'},
+  {pieces:[P('p','r',4,8),P('p','b',4,7),P('k','r',9,4),P('k','b',0,4),P('p','r',5,4)],from:[4,8],to:[4,7],coach:'过河兵能横着走，也能横着吃子。'}
+ ],
+ [
+  {pieces:[P('r','r',5,0),P('k','r',9,4),P('k','b',0,4),P('p','r',6,4)],from:[5,0],to:[5,4],coach:'把车移到将的正下方，喊一声“将军”！'},
+  {pieces:[P('c','r',5,4),P('p','r',3,4),P('k','r',9,4),P('k','b',0,4)],from:[5,4],to:[4,4],coach:'炮和将之间有一个炮架，这一步形成将军。'},
+  {pieces:[P('a','r',9,3),P('k','r',9,4),P('r','b',5,4),P('k','b',0,3)],from:[9,3],to:[8,4],coach:'黑车正在将军。让仕走到中间，把攻击路线挡住。'},
+  {pieces:[P('r','r',8,0),P('r','b',9,0),P('k','r',9,4),P('k','b',0,3)],from:[8,0],to:[9,0],coach:'吃掉正在横线将军的黑车，警报解除。'}
+ ],
+ [
+  {pieces:[P('r','r',1,0),P('k','b',0,0),P('k','r',9,4),P('p','r',5,4)],from:[1,0],to:[0,0],coach:'黑将就在车的前面，一步拿下！'},
+  {pieces:[P('r','r',0,8),P('k','b',0,4),P('k','r',9,4),P('p','r',5,4)],from:[0,8],to:[0,4],coach:'横线畅通，用车吃掉黑将。'},
+  {pieces:[P('c','r',4,4),P('p','r',2,4),P('k','b',0,4),P('k','r',9,4)],from:[4,4],to:[0,4],coach:'红兵是炮架，炮可以翻过它吃掉黑将。'},
+  {pieces:[P('r','r',3,4),P('k','b',0,4),P('k','r',9,3)],from:[3,4],to:[0,4],coach:'最后一题：车沿直线完成胜利。'}
+ ]
+];
+const GO_PUZZLES=[
+ [
+  {black:[[3,4],[4,3],[5,4]],white:[[4,4]],to:[4,5],coach:'白棋只剩下面这一口气。堵住它，就能完成第一次提子。'},
+  {black:[[1,0]],white:[[0,0]],to:[0,1],coach:'角上的棋只有两口气。黑棋已经堵住一口，再找到最后一口。'},
+  {black:[[3,0],[5,0]],white:[[4,0]],to:[4,1],coach:'边上的白棋只剩棋盘里面这一口气。'},
+  {black:[[3,3],[4,3],[2,4],[3,5],[4,5]],white:[[3,4],[4,4]],to:[5,4],coach:'两颗相连的白棋共用气。堵住右边最后一口，一起提走。'}
+ ],
+ [
+  {black:[[3,4],[4,3]],white:[[4,4]],to:[5,4],coach:'落在右边后，白棋只剩下面一口气，这就是“打吃”。'},
+  {black:[[3,3],[4,3],[2,4],[4,5]],white:[[3,4],[4,4]],to:[5,4],coach:'观察整块白棋的气，把它压缩到只剩一口。'},
+  {black:[[3,0],[4,1]],white:[[4,0]],to:[5,0],coach:'边上的棋气更少。找到能直接完成提子的点。'},
+  {black:[[1,0]],white:[[0,0]],to:[0,1],coach:'角上的棋最容易被包围，堵住最后一口气。'}
+ ],
+ [
+  {black:[[4,4]],white:[[3,4],[4,3],[5,4]],to:[4,5],coach:'黑棋只剩一口气。向外逃，马上会得到新的气。'},
+  {black:[[3,4],[4,4]],white:[[2,4],[3,3],[4,3],[5,4],[4,5]],to:[3,5],coach:'整块黑棋在危险中，从下面的出口逃出去。'},
+  {black:[[4,0]],white:[[3,0],[4,1]],to:[5,0],coach:'边上的黑棋被打吃，沿着边向外逃。'},
+  {black:[[3,3],[5,3]],white:[[3,2],[5,2],[3,4],[5,4]],to:[4,3],coach:'把两边的黑棋接在一起，它们就能共享气。'}
+ ],
+ [
+  {black:[[3,4],[5,4]],white:[[4,3]],to:[4,4],coach:'落在两颗黑棋中间，让它们手拉手连成一块。'},
+  {black:[[4,3],[4,5]],white:[[3,4]],to:[4,4],coach:'这一点能同时连接上下两颗黑棋。'},
+  {black:[[3,3],[5,3]],white:[[4,2],[4,4]],to:[4,3],coach:'抢到中间的关键点，切断白棋的联系。'},
+  {black:[[3,3],[4,4]],white:[[2,4],[5,3]],to:[3,4],coach:'斜着并不算连接。补在这里，才能真正连成一块。'}
+ ],
+ [
+  {black:[[3,4],[4,3],[5,4]],white:[[2,2]],to:[4,5],coach:'补上下面的缺口，中央就会出现一个被黑棋围住的眼。'},
+  {black:[[1,0],[0,1]],white:[[3,3]],to:[1,1],coach:'守住角部，让两颗黑棋互相帮助，保护角里的空间。'},
+  {black:[[2,3],[3,2],[4,3]],white:[[6,6]],to:[3,4],coach:'补齐最后一面，围出自己的小小地盘。'},
+  {black:[[5,3],[4,4],[6,4]],white:[[2,2]],to:[5,5],coach:'别急着追白棋，先把自己的家围完整。'}
+ ],
+ [
+  {black:[[2,4],[3,3],[4,4]],white:[[3,4]],to:[3,5],coach:'先检查能不能提子。白棋只剩下面这一口气。'},
+  {black:[[2,2],[3,1],[4,2],[2,3],[4,3]],white:[[3,2],[3,3]],to:[3,4],coach:'找到两颗白棋共同的最后一口气。'},
+  {black:[[4,2],[3,3],[5,3]],white:[[4,3],[4,4]],to:[3,4],coach:'从侧面压缩白棋的气，为下一步提子做准备。'},
+  {black:[[2,4],[3,3],[4,4],[5,3]],white:[[3,4],[4,3]],to:[3,5],coach:'综合题：先数白棋的气，再堵住最紧迫的最后一口。'}
+ ]
+];
+
+function blankProgress(n){return Array.from({length:n},()=>({lesson:false,solved:0}))}
+function loadGM(){try{const p=JSON.parse(localStorage.getItem(GM_KEY));if(p?.course?.length===5)return p}catch{}return{stars:0,streak:1,unlocked:0,currentStage:0,course:blankProgress(5)}}
+function loadXQ(){try{const p=JSON.parse(localStorage.getItem(XQ_KEY));if(p?.course?.length===6)return p}catch{}return{stars:0,streak:1,unlocked:0,currentStage:0,course:blankProgress(6)}}
+function loadGo(){try{const p=JSON.parse(localStorage.getItem(GO_KEY));if(p?.course?.length===6)return p}catch{}return{stars:0,streak:1,unlocked:0,currentStage:0,course:blankProgress(6)}}
+const state={game:null,mode:null,stage:0,board:[],turn:'r',over:false,sound:true,level:'easy',selected:null,legal:[],hint:null,mistakes:0,moves:0,puzzleIndex:0,puzzleStep:0,puzzle:null,nextAction:'course',goHistory:[],passes:0,gm:loadGM(),xq:loadXQ(),go:loadGo()};
+
+function gameProgress(game=state.game){return game==='gomoku'?state.gm:game==='xiangqi'?state.xq:state.go}
+function curriculum(game=state.game){return game==='gomoku'?GM_CURRICULUM:game==='xiangqi'?XQ_CURRICULUM:GO_CURRICULUM}
+function puzzleTotal(){return state.game==='gomoku'?6:4}
+function currentStage(){return curriculum()[state.stage]}
+function stageProgress(i=state.stage){return gameProgress().course[i]}
+function stagePercent(i=state.stage){const p=stageProgress(i),n=puzzleTotal();return Math.round((p.lesson?20:0)+Math.min(p.solved,n)/n*80)}
+function isStageDone(i){const p=stageProgress(i);return p.lesson&&p.solved>=puzzleTotal()}
+function save(){if(state.game){const p=gameProgress();p.currentStage=state.stage;localStorage.setItem(state.game==='gomoku'?GM_KEY:state.game==='xiangqi'?XQ_KEY:GO_KEY,JSON.stringify(p))}updateHub();updateCourse()}
+function speak(text){if(!state.sound||!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=.9;u.pitch=1.08;speechSynthesis.speak(u)}
+function showView(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$('#hallBtn').classList.toggle('hidden',id==='hubView');window.scrollTo({top:0,behavior:'smooth'})}
+
+function overall(game){const old=state.game;state.game=game;const all=curriculum(),sum=all.reduce((a,_,i)=>a+stagePercent(i),0);state.game=old;return Math.round(sum/all.length)}
+function updateHub(){const gp=overall('gomoku'),xp=overall('xiangqi'),op=overall('go');$('#gomokuHubProgress').textContent=gp+'%';$('#gomokuHubBar').style.width=gp+'%';$('#xiangqiHubProgress').textContent=xp+'%';$('#xiangqiHubBar').style.width=xp+'%';$('#goHubProgress').textContent=op+'%';$('#goHubBar').style.width=op+'%';$('#totalStars').textContent=(state.gm.stars||0)+(state.xq.stars||0)+(state.go.stars||0);$('#streakCount').textContent=Math.max(state.gm.streak||1,state.xq.streak||1,state.go.streak||1)}
+function openGame(game){state.game=game;state.stage=Math.min(gameProgress().currentStage||0,curriculum().length-1);updateCourse();showView('courseView')}
+function goHub(){state.game=null;window.speechSynthesis?.cancel();updateHub();showView('hubView')}
+function updateCourse(){if(!state.game)return;const c=currentStage(),p=stageProgress(),total=puzzleTotal(),isGM=state.game==='gomoku',isXQ=state.game==='xiangqi';$('#courseHero').classList.toggle('gomoku',isGM);$('#courseBadge').textContent=`第 ${state.stage+1} 阶段 · ${c.rank}`;$('#courseTitle').textContent=c.hero;$('#courseDesc').textContent=c.desc;$('#courseSymbol').textContent=isGM||state.game==='go'?'●':(c.pieces?.[0]||'帥');$('#gameLabel').textContent=isGM?'五子棋冒险':isXQ?'中国象棋学堂':'围棋启蒙岛';$('#stagePercent').textContent=stagePercent();$('#lessonCardTitle').textContent=c.lesson;$('#lessonCardDesc').textContent=c.rule;$('#puzzleCardTag').textContent=`互动闯关 · ${Math.min(p.solved,total)}/${total}`;$('#puzzleCardTitle').textContent=c.puzzleTitle;$('#puzzleCardDesc').textContent=isGM?'在变化棋形中找到关键手':isXQ?'在棋盘上亲手走出正确答案':'数清每一口气，找到关键落点';$('#battleCardTitle').textContent=c.battle;$('#roadTitle').textContent=isGM?'五段棋力冒险':isXQ?'六站象棋启蒙':'六站围棋启蒙';const cards=$$('.mission-card');cards[0].classList.toggle('complete',p.lesson);cards[1].classList.toggle('complete',p.solved>=total);const prog=gameProgress();$('#stagePath').innerHTML=curriculum().map((s,i)=>{const locked=i>prog.unlocked,done=isStageDone(i),active=i===state.stage;return`<button class="stage-node ${done?'done':''} ${active?'active':''}" data-stage="${i}" ${locked?'disabled':''}><span class="stage-emoji">${locked?'🔒':s.emoji}</span><b>${i+1}. ${s.title}</b><small>${s.rank}<br>${done?'已完成，可复习':locked?'完成上一站后开启':stagePercent(i)+'% 完成'}</small><span class="node-status">${done?'✓':active?'正在学':locked?'未解锁':'可学习'}</span></button>`}).join('');$$('.stage-node:not(:disabled)').forEach(b=>b.onclick=()=>{state.stage=+b.dataset.stage;save();$('.today-section').scrollIntoView({behavior:'smooth'})})}
+
+function clearBoard(){state.selected=null;state.legal=[];state.hint=null;state.mistakes=0;state.moves=0;state.passes=0;state.goHistory=[];state.over=false;state.turn=state.game==='xiangqi'?'r':1;$('#celebration').classList.remove('show');$('#lessonPanel').classList.remove('show');$('#passBtn').classList.add('hidden')}
+function setupMode(mode){state.mode=mode;clearBoard();const c=currentStage();$('.level-card').style.display=mode==='battle'?'block':'none';$('#boardWrap').classList.toggle('xiangqi-board',state.game==='xiangqi');if(state.game==='gomoku')setupGM(mode);else if(state.game==='xiangqi')setupXQ(mode);else setupGo(mode);showView('gameView');draw();speak($('#coachText').textContent)}
+function setupGM(mode){canvas.width=660;canvas.height=660;state.board=Array.from({length:11},()=>Array(11).fill(0));const c=currentStage();$('#coachAvatar').textContent='★';$('#tinyRule').innerHTML='<b>记住：</b>横着、竖着、斜着，只要五颗连成一线就赢啦！';if(mode==='lesson'){const d=gmPuzzle(state.stage,0);gmPut(d.black,1);gmPut(d.white,2);state.hint={x:d.steps[0][0],y:d.steps[0][1]};showLesson(c);$('#moveCount').textContent='知识卡';$('#puzzleProgress').textContent='理解方法比记住答案更重要'}else if(mode==='puzzle'){const p=stageProgress();state.puzzleIndex=p.solved<6?p.solved:Math.floor(Math.random()*6);state.puzzle=gmPuzzle(state.stage,state.puzzleIndex);state.puzzleStep=0;gmPut(state.puzzle.black,1);gmPut(state.puzzle.white,2);$('#modeKicker').textContent=`第 ${state.stage+1} 阶段 · 第 ${state.puzzleIndex+1} 题`;$('#modeTitle').textContent=c.puzzleTitle;$('#coachText').textContent=state.puzzle.coach;gmPuzzleProgress()}else{state.level=c.level;syncLevel();['刚学会下棋','会进攻和防守','会提前想几步'].forEach((t,i)=>$$('[data-level] small')[i].textContent=t);$('#modeKicker').textContent=`第 ${state.stage+1} 阶段 · 实战`;$('#modeTitle').textContent=c.battle;$('#coachText').textContent='电脑会找胜点、堵住你的进攻。试着用刚学的招式制造双重威胁！';$('#moveCount').textContent='已走 0 步';$('#puzzleProgress').textContent='先连成 5 颗就获胜';updateTurn()}}
+function setupXQ(mode){canvas.width=594;canvas.height=660;const c=currentStage();$('#coachAvatar').textContent='帥';$('#tinyRule').innerHTML='<b>记住：</b>红方先走。选中棋子后，绿色圆点就是可以走的位置。';if(mode==='lesson'){state.board=xqFromPieces(XQ_PUZZLES[state.stage][0].pieces);showLesson(c);$('#moveCount').textContent='知识卡';$('#puzzleProgress').textContent='先学规则，再亲手走棋'}else if(mode==='puzzle'){const p=stageProgress();state.puzzleIndex=p.solved<4?p.solved:Math.floor(Math.random()*4);state.puzzle=XQ_PUZZLES[state.stage][state.puzzleIndex];state.board=xqFromPieces(state.puzzle.pieces);$('#modeKicker').textContent=`第 ${state.stage+1} 站 · 第 ${state.puzzleIndex+1} 题`;$('#modeTitle').textContent=c.puzzleTitle;$('#coachText').textContent=state.puzzle.coach;$('#moveCount').textContent=`第 ${state.puzzleIndex+1} / 4 题`;$('#puzzleProgress').textContent='先选中红棋，再选择落点';updateTurn()}else{state.board=xqInitial();state.level=c.level;syncLevel();['适合第一次对战','会主动吃子','会寻找将军'].forEach((t,i)=>$$('[data-level] small')[i].textContent=t);$('#modeKicker').textContent=`第 ${state.stage+1} 站 · 完整对局`;$('#modeTitle').textContent=c.battle;$('#coachText').textContent='你执红棋先走。点击棋子后，我会用绿点告诉你哪些位置可以走。';$('#moveCount').textContent='已走 0 步';$('#puzzleProgress').textContent='目标：保护帅，捉住对方的将';updateTurn()}}
+function setupGo(mode){canvas.width=660;canvas.height=660;const c=currentStage();$('#coachAvatar').textContent='○';$('#tinyRule').innerHTML='<b>记住：</b>棋下在交叉点上。上下左右的空点是“气”，没有气的棋会被提走。';if(mode==='lesson'){state.puzzle=GO_PUZZLES[state.stage][0];state.board=goFromPuzzle(state.puzzle);showLesson(c);$('#pieceDemo').innerHTML='<span class="stone black"></span><span class="stone white"></span>';$('#moveCount').textContent='知识卡';$('#puzzleProgress').textContent='先学会数气，再到棋盘上试一试'}else if(mode==='puzzle'){const p=stageProgress();state.puzzleIndex=p.solved<4?p.solved:Math.floor(Math.random()*4);state.puzzle=GO_PUZZLES[state.stage][state.puzzleIndex];state.board=goFromPuzzle(state.puzzle);$('#modeKicker').textContent=`第 ${state.stage+1} 岛 · 第 ${state.puzzleIndex+1} 题`;$('#modeTitle').textContent=c.puzzleTitle;$('#coachText').textContent=state.puzzle.coach;$('#moveCount').textContent=`第 ${state.puzzleIndex+1} / 4 题`;$('#puzzleProgress').textContent='你执黑棋，找到关键交叉点';updateTurn()}else{state.board=goEmpty();state.goHistory=[goSerial(state.board)];state.level=c.level;syncLevel();['陪你慢慢认识气','会主动打吃和逃子','会计算提子与地盘'].forEach((t,i)=>$$('[data-level] small')[i].textContent=t);$('#passBtn').classList.remove('hidden');$('#modeKicker').textContent=`第 ${state.stage+1} 岛 · 9 路实战`;$('#modeTitle').textContent=c.battle;$('#coachText').textContent='你执黑棋先走。想结束对局时，点击“结束并数子”查看结果。';$('#moveCount').textContent='已走 0 手';$('#puzzleProgress').textContent='黑棋先行 · 围地多的一方获胜';updateTurn()}}
+function showLesson(c){$('#modeKicker').textContent=`第 ${state.stage+1} 阶段 · 新本领`;$('#modeTitle').textContent=c.lesson;$('#coachText').textContent='先看懂方法，再到棋盘上亲手试一试。';$('#lessonTitle').textContent=c.lesson;$('#lessonText').textContent=c.lessonText;$('#lessonRule').textContent=c.rule;$('#pieceDemo').innerHTML=(c.pieces||[]).map(x=>`<span class="demo-piece">${x}</span>`).join('');$('#turnBanner').innerHTML=state.game==='xiangqi'?'<span class="demo-piece" style="width:28px;height:28px;font-size:15px;border-width:2px">帥</span><b>红方先行</b><small>棋子走在线的交叉点</small>':`<span class="stone black"></span><b>${state.game==='go'?'黑棋先行':'你执黑棋'}</b><small>${state.game==='go'?'棋下在交叉点上':'先连成五颗'}</small>`;$('#lessonPanel').classList.add('show')}
+function syncLevel(){$$('[data-level]').forEach(b=>b.classList.toggle('active',b.dataset.level===state.level))}
+
+// Gomoku engine
+function gmPut(points,v){points.forEach(([x,y])=>state.board[y][x]=v)}
+function drawGM(){const W=660,pad=42,cell=(W-pad*2)/10,grad=ctx.createLinearGradient(0,0,W,W);grad.addColorStop(0,'#e7be7c');grad.addColorStop(1,'#c99552');ctx.fillStyle=grad;ctx.fillRect(0,0,W,W);ctx.strokeStyle='rgba(87,54,22,.68)';ctx.lineWidth=2;for(let i=0;i<11;i++){ctx.beginPath();ctx.moveTo(pad,pad+i*cell);ctx.lineTo(W-pad,pad+i*cell);ctx.stroke();ctx.beginPath();ctx.moveTo(pad+i*cell,pad);ctx.lineTo(pad+i*cell,W-pad);ctx.stroke()}[[3,3],[7,3],[5,5],[3,7],[7,7]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(pad+x*cell,pad+y*cell,5,0,Math.PI*2);ctx.fillStyle='#714c27';ctx.fill()});for(let y=0;y<11;y++)for(let x=0;x<11;x++)if(state.board[y][x])drawStone(pad+x*cell,pad+y*cell,cell*.39,state.board[y][x]);if(state.hint){ctx.beginPath();ctx.arc(pad+state.hint.x*cell,pad+state.hint.y*cell,cell*.34,0,Math.PI*2);ctx.strokeStyle='#ff5148';ctx.lineWidth=6;ctx.setLineDash([10,8]);ctx.stroke();ctx.setLineDash([])}}
+function drawStone(x,y,r,v){ctx.save();ctx.shadowColor='rgba(52,35,17,.35)';ctx.shadowBlur=9;ctx.shadowOffsetY=5;const g=ctx.createRadialGradient(x-r*.35,y-r*.45,r*.08,x,y,r);if(v===1){g.addColorStop(0,'#718088');g.addColorStop(.45,'#26353b');g.addColorStop(1,'#10181c')}else{g.addColorStop(0,'#fff');g.addColorStop(.55,'#f5f2ea');g.addColorStop(1,'#c9c6bd')}ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore()}
+function gmCoords(e){const r=canvas.getBoundingClientRect(),s=canvas.width/r.width,p=42,c=(660-p*2)/10;return{x:Math.round(((e.clientX-r.left)*s-p)/c),y:Math.round(((e.clientY-r.top)*s-p)/c)}}
+function gmClick(e){if(state.over||state.turn!==1||state.mode==='lesson')return;const{x,y}=gmCoords(e);if(x<0||y<0||x>10||y>10||state.board[y][x])return;if(state.mode==='puzzle')return gmPuzzleMove(x,y);state.board[y][x]=1;state.moves++;draw();if(gmWin(x,y,1))return finishBattle(true);state.turn=2;updateTurn();setTimeout(gmAI,380)}
+function gmPuzzleMove(x,y){const[a,b]=state.puzzle.steps[state.puzzleStep];if(x!==a||y!==b){state.mistakes++;state.board[y][x]=1;draw();setTimeout(()=>{state.board[y][x]=0;if(state.mistakes>=2){state.hint={x:a,y:b};$('#coachText').textContent='这题很有挑战！红圈给你一个方向。'}else $('#coachText').textContent='这一步还不够有力，先想想对手会怎样回答。';draw();speak($('#coachText').textContent)},350);return}state.hint=null;state.board[y][x]=1;draw();if(state.puzzleStep===state.puzzle.steps.length-1)return finishPuzzle();state.turn=2;updateTurn();setTimeout(()=>{const r=state.puzzle.replies[state.puzzleStep];if(r)state.board[r[1]][r[0]]=2;state.puzzleStep++;state.turn=1;$('#coachText').textContent='对手挡了一边。现在找出下一步最强的进攻！';gmPuzzleProgress();updateTurn();draw();speak($('#coachText').textContent)},430)}
+function gmPuzzleProgress(){$('#moveCount').textContent=`第 ${state.puzzleIndex+1} / 6 题`;$('#puzzleProgress').textContent=state.puzzle.steps.length>1?`连续题：第 ${state.puzzleStep+1} / ${state.puzzle.steps.length} 步`:'找到这一题的关键手'}
+function gmWin(x,y,v){return[[1,0],[0,1],[1,1],[1,-1]].some(([a,b])=>1+gmCount(x,y,a,b,v)+gmCount(x,y,-a,-b,v)>=5)}
+function gmCount(x,y,dx,dy,v){let n=0;for(let i=1;i<5;i++){const a=x+dx*i,b=y+dy*i;if(a<0||b<0||a>10||b>10||state.board[b][a]!==v)break;n++}return n}
+function gmAvail(){const a=[];for(let y=0;y<11;y++)for(let x=0;x<11;x++)if(!state.board[y][x])a.push({x,y});return a}
+function gmWould(x,y,v){state.board[y][x]=v;const w=gmWin(x,y,v);state.board[y][x]=0;return w}
+function gmScore(x,y,v){let t=0;for(const[dx,dy]of[[1,0],[0,1],[1,1],[1,-1]]){let n=1,o=0;for(const d of[-1,1])for(let i=1;i<5;i++){const a=x+dx*i*d,b=y+dy*i*d;if(a<0||b<0||a>10||b>10)break;if(state.board[b][a]===v)n++;else{if(!state.board[b][a])o++;break}}t+=n**3*(o+1)}return t}
+function gmAI(){if(state.over)return;const a=gmAvail();let p=a.find(c=>gmWould(c.x,c.y,2))||a.find(c=>gmWould(c.x,c.y,1));if(!p&&state.level==='easy'&&Math.random()<.45)p=a[Math.floor(Math.random()*a.length)];if(!p)p=a.map(c=>({...c,s:gmScore(c.x,c.y,2)*1.18+gmScore(c.x,c.y,1)*(state.level==='hard'?1.12:.82)})).sort((a,b)=>b.s-a.s)[0];state.board[p.y][p.x]=2;state.moves++;draw();if(gmWin(p.x,p.y,2))return finishBattle(false);state.turn=1;updateTurn()}
+
+// Xiangqi engine
+const XQ_TEXT={r:{r:'車',n:'馬',b:'相',a:'仕',k:'帥',c:'炮',p:'兵'},b:{r:'車',n:'馬',b:'象',a:'士',k:'將',c:'砲',p:'卒'}};
+function xqEmpty(){return Array.from({length:10},()=>Array(9).fill(null))}
+function xqFromPieces(ps){const b=xqEmpty();ps.forEach(p=>b[p.y][p.x]={t:p.t,c:p.c});return b}
+function xqInitial(){return xqFromPieces([P('r','b',0,0),P('n','b',0,1),P('b','b',0,2),P('a','b',0,3),P('k','b',0,4),P('a','b',0,5),P('b','b',0,6),P('n','b',0,7),P('r','b',0,8),P('c','b',2,1),P('c','b',2,7),...[0,2,4,6,8].map(x=>P('p','b',3,x)),P('r','r',9,0),P('n','r',9,1),P('b','r',9,2),P('a','r',9,3),P('k','r',9,4),P('a','r',9,5),P('b','r',9,6),P('n','r',9,7),P('r','r',9,8),P('c','r',7,1),P('c','r',7,7),...[0,2,4,6,8].map(x=>P('p','r',6,x))])}
+function xqClone(b){return b.map(r=>r.map(p=>p?{...p}:null))}
+function inPalace(c,y,x){return x>=3&&x<=5&&(c==='r'?y>=7&&y<=9:y>=0&&y<=2)}
+function between(b,y1,x1,y2,x2){let n=0;if(y1===y2){for(let x=Math.min(x1,x2)+1;x<Math.max(x1,x2);x++)if(b[y1][x])n++}else if(x1===x2){for(let y=Math.min(y1,y2)+1;y<Math.max(y1,y2);y++)if(b[y][x1])n++}else return 99;return n}
+function xqRaw(b,fy,fx,ty,tx){if(ty<0||ty>9||tx<0||tx>8)return false;const p=b[fy]?.[fx],q=b[ty][tx];if(!p||q?.c===p.c)return false;const dy=ty-fy,dx=tx-fx,ay=Math.abs(dy),ax=Math.abs(dx);if(p.t==='r')return(fy===ty||fx===tx)&&between(b,fy,fx,ty,tx)===0;if(p.t==='c'){const n=between(b,fy,fx,ty,tx);return q?n===1:n===0}if(p.t==='n'){if(!((ay===2&&ax===1)||(ay===1&&ax===2)))return false;const ly=ay===2?fy+dy/2:fy,lx=ax===2?fx+dx/2:fx;return!b[ly][lx]}if(p.t==='b'){if(ay!==2||ax!==2)return false;if(p.c==='r'&&ty<5||p.c==='b'&&ty>4)return false;return!b[fy+dy/2][fx+dx/2]}if(p.t==='a')return ay===1&&ax===1&&inPalace(p.c,ty,tx);if(p.t==='k'){if(q?.t==='k'&&fx===tx&&between(b,fy,fx,ty,tx)===0)return true;return ay+ax===1&&inPalace(p.c,ty,tx)}if(p.t==='p'){const forward=p.c==='r'?-1:1,crossed=p.c==='r'?fy<=4:fy>=5;return(dy===forward&&dx===0)||(crossed&&dy===0&&ax===1)}return false}
+function xqCheck(b,c){let ky=-1,kx=-1;for(let y=0;y<10;y++)for(let x=0;x<9;x++)if(b[y][x]?.c===c&&b[y][x].t==='k'){ky=y;kx=x}if(ky<0)return true;for(let y=0;y<10;y++)for(let x=0;x<9;x++)if(b[y][x]&&b[y][x].c!==c&&xqRaw(b,y,x,ky,kx))return true;return false}
+function xqLegal(b,fy,fx,ty,tx){if(!xqRaw(b,fy,fx,ty,tx))return false;const c=b[fy][fx].c,n=xqClone(b);n[ty][tx]=n[fy][fx];n[fy][fx]=null;return!xqCheck(n,c)}
+function xqMoves(b,c){const m=[];for(let fy=0;fy<10;fy++)for(let fx=0;fx<9;fx++)if(b[fy][fx]?.c===c)for(let ty=0;ty<10;ty++)for(let tx=0;tx<9;tx++)if(xqLegal(b,fy,fx,ty,tx))m.push({fy,fx,ty,tx,capture:b[ty][tx]});return m}
+function xqApply(m){const cap=state.board[m.ty][m.tx];state.board[m.ty][m.tx]=state.board[m.fy][m.fx];state.board[m.fy][m.fx]=null;return cap}
+function xqTargets(y,x){const a=[];for(let ty=0;ty<10;ty++)for(let tx=0;tx<9;tx++)if(xqLegal(state.board,y,x,ty,tx))a.push({y:ty,x:tx});return a}
+function xqCoords(e){const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,p=45,c=63;return{x:Math.round(((e.clientX-r.left)*sx-p)/c),y:Math.round(((e.clientY-r.top)*sy-p)/c)}}
+function xqClick(e){if(state.over||state.turn!=='r'||state.mode==='lesson')return;const{x,y}=xqCoords(e);if(x<0||x>8||y<0||y>9)return;if(state.mode==='puzzle')return xqPuzzleClick(y,x);const p=state.board[y][x];if(p?.c==='r'){state.selected={y,x};state.legal=xqTargets(y,x);$('#coachText').textContent=`已选中${XQ_TEXT.r[p.t]}，绿色圆点都是它能走的位置。`;draw();return}if(!state.selected)return;const ok=state.legal.some(q=>q.y===y&&q.x===x);if(!ok){$('#coachText').textContent='这个位置不符合走法。看看绿色圆点，再试一次。';speak($('#coachText').textContent);return}const cap=xqApply({fy:state.selected.y,fx:state.selected.x,ty:y,tx:x});state.selected=null;state.legal=[];state.moves++;draw();if(cap?.t==='k')return finishBattle(true);state.turn='b';updateTurn();setTimeout(xqAI,450)}
+function xqPuzzleClick(y,x){const [fy,fx]=state.puzzle.from,[ty,tx]=state.puzzle.to,p=state.board[y][x];if(!state.selected){if(y===fy&&x===fx){state.selected={y,x};state.legal=xqTargets(y,x);$('#coachText').textContent='选对棋子了！现在选择它要去的位置。';draw()}else{state.mistakes++;$('#coachText').textContent='先找出题目中最关键的红棋。'+(state.mistakes>=2?'黄色圈会给你提示。':'');if(state.mistakes>=2)state.hint={y:fy,x:fx};draw();speak($('#coachText').textContent)}return}if(y===fy&&x===fx){state.selected=null;state.legal=[];draw();return}if(y===ty&&x===tx){xqApply({fy,fx,ty,tx});state.selected=null;state.legal=[];state.hint=null;draw();return setTimeout(finishPuzzle,250)}state.mistakes++;state.selected=null;state.legal=[];$('#coachText').textContent=state.mistakes>=2?'再想想棋子的走法，黄色圈标出了目标位置。':'还差一点。想想这颗棋可以怎样走。';if(state.mistakes>=2)state.hint={y:ty,x:tx};draw();speak($('#coachText').textContent)}
+function xqAI(){if(state.over)return;const moves=xqMoves(state.board,'b');if(!moves.length)return finishBattle(true);const val={k:10000,r:90,c:55,n:45,b:25,a:25,p:12};let pick;if(state.level==='easy'&&Math.random()<.6)pick=moves[Math.floor(Math.random()*moves.length)];else{pick=moves.map(m=>{const n=xqClone(state.board);n[m.ty][m.tx]=n[m.fy][m.fx];n[m.fy][m.fx]=null;let s=(m.capture?val[m.capture.t]:0)*10+Math.random()*12;if(xqCheck(n,'r'))s+=state.level==='hard'?180:70;if(state.level==='hard'){const replies=xqMoves(n,'r'),danger=Math.max(0,...replies.map(r=>r.capture?val[r.capture.t]:0));s-=danger*5}s+=(5-Math.abs(m.tx-4));return{...m,s}}).sort((a,b)=>b.s-a.s)[0]}const cap=xqApply(pick);state.moves++;draw();if(cap?.t==='k')return finishBattle(false);state.turn='r';updateTurn();if(xqCheck(state.board,'r')){$('#coachText').textContent='将军警报！这一步必须保护自己的帅。';speak('将军警报，请保护自己的帅')}}
+function drawXQ(){const W=594,H=660,p=45,c=63;ctx.fillStyle='#e4b86f';ctx.fillRect(0,0,W,H);const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'rgba(255,238,192,.45)');g.addColorStop(1,'rgba(126,71,24,.12)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.strokeStyle='#6e431f';ctx.lineWidth=2.3;for(let y=0;y<10;y++){ctx.beginPath();ctx.moveTo(p,p+y*c);ctx.lineTo(p+8*c,p+y*c);ctx.stroke()}for(let x=0;x<9;x++){ctx.beginPath();ctx.moveTo(p+x*c,p);ctx.lineTo(p+x*c,p+4*c);ctx.stroke();ctx.beginPath();ctx.moveTo(p+x*c,p+5*c);ctx.lineTo(p+x*c,p+9*c);ctx.stroke()}ctx.beginPath();ctx.moveTo(p,p+4*c);ctx.lineTo(p,p+5*c);ctx.moveTo(p+8*c,p+4*c);ctx.lineTo(p+8*c,p+5*c);ctx.stroke();[[0,3,2,5],[0,5,2,3],[7,3,9,5],[7,5,9,3]].forEach(([y1,x1,y2,x2])=>{ctx.beginPath();ctx.moveTo(p+x1*c,p+y1*c);ctx.lineTo(p+x2*c,p+y2*c);ctx.stroke()});ctx.fillStyle='rgba(91,49,18,.74)';ctx.font='32px KaiTi,STKaiti,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('楚 河',p+2*c,p+4.5*c);ctx.fillText('漢 界',p+6*c,p+4.5*c);if(state.hint){ctx.beginPath();ctx.arc(p+state.hint.x*c,p+state.hint.y*c,27,0,Math.PI*2);ctx.strokeStyle='#ffcc32';ctx.lineWidth=7;ctx.setLineDash([7,6]);ctx.stroke();ctx.setLineDash([])}state.legal.forEach(q=>{ctx.beginPath();ctx.arc(p+q.x*c,p+q.y*c,state.board[q.y][q.x]?25:10,0,Math.PI*2);ctx.fillStyle=state.board[q.y][q.x]?'rgba(75,177,105,.22)':'#43a967';ctx.fill();if(state.board[q.y][q.x]){ctx.strokeStyle='#43a967';ctx.lineWidth=5;ctx.stroke()}});for(let y=0;y<10;y++)for(let x=0;x<9;x++)if(state.board[y][x])drawXQPiece(p+x*c,p+y*c,state.board[y][x],state.selected?.y===y&&state.selected?.x===x)}
+function drawXQPiece(x,y,piece,selected){ctx.save();ctx.shadowColor='rgba(61,35,14,.35)';ctx.shadowBlur=7;ctx.shadowOffsetY=4;ctx.beginPath();ctx.arc(x,y,27,0,Math.PI*2);ctx.fillStyle='#f7e2b7';ctx.fill();ctx.shadowColor='transparent';ctx.strokeStyle=piece.c==='r'?'#ba3f36':'#27393b';ctx.lineWidth=selected?6:4;ctx.stroke();ctx.beginPath();ctx.arc(x,y,21,0,Math.PI*2);ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=piece.c==='r'?'#b93632':'#253537';ctx.font='700 28px KaiTi,STKaiti,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(XQ_TEXT[piece.c][piece.t],x,y+1);ctx.restore()}
+
+// 9x9 Go engine
+function goEmpty(){return Array.from({length:9},()=>Array(9).fill(0))}
+function goFromPuzzle(p){const b=goEmpty();p.black.forEach(([x,y])=>b[y][x]=1);p.white.forEach(([x,y])=>b[y][x]=2);return b}
+function goSerial(b){return b.map(r=>r.join('')).join('/')}
+function goNeighbors(x,y){return[[x-1,y],[x+1,y],[x,y-1],[x,y+1]].filter(([a,b])=>a>=0&&a<9&&b>=0&&b<9)}
+function goGroup(b,x,y){const color=b[y][x],stack=[[x,y]],seen=new Set(),stones=[],libs=new Set();while(stack.length){const[a,c]=stack.pop(),key=a+','+c;if(seen.has(key))continue;seen.add(key);stones.push([a,c]);goNeighbors(a,c).forEach(([nx,ny])=>{if(!b[ny][nx])libs.add(nx+','+ny);else if(b[ny][nx]===color&&!seen.has(nx+','+ny))stack.push([nx,ny])})}return{stones,libs}}
+function goTry(b,x,y,color){if(x<0||x>8||y<0||y>8||b[y][x])return null;const n=b.map(r=>[...r]);n[y][x]=color;let captured=0;goNeighbors(x,y).forEach(([nx,ny])=>{if(n[ny][nx]&&n[ny][nx]!==color){const g=goGroup(n,nx,ny);if(!g.libs.size){captured+=g.stones.length;g.stones.forEach(([a,c])=>n[c][a]=0)}}});if(!goGroup(n,x,y).libs.size)return null;return{board:n,captured}}
+function goKo(result){return state.goHistory.length>=2&&goSerial(result.board)===state.goHistory[state.goHistory.length-2]}
+function goCoords(e){const r=canvas.getBoundingClientRect(),s=canvas.width/r.width,p=50,c=70;return{x:Math.round(((e.clientX-r.left)*s-p)/c),y:Math.round(((e.clientY-r.top)*s-p)/c)}}
+function goClick(e){if(state.over||state.turn!==1||state.mode==='lesson')return;const{x,y}=goCoords(e);if(x<0||x>8||y<0||y>8)return;if(state.mode==='puzzle'){const[tx,ty]=state.puzzle.to;if(x!==tx||y!==ty){state.mistakes++;$('#coachText').textContent=state.mistakes>=2?'黄色圈标出了关键交叉点。先数一数周围还有几口气。':'这一步还不是最紧迫的。先数上下左右的气。';if(state.mistakes>=2)state.hint={x:tx,y:ty};draw();speak($('#coachText').textContent);return}const r=goTry(state.board,x,y,1);if(!r)return;state.board=r.board;state.hint=null;draw();setTimeout(finishPuzzle,250);return}const r=goTry(state.board,x,y,1);if(!r||goKo(r)){$('#coachText').textContent=!r?'这里不能落子：可能没有气，或已经有棋子。':'不能马上回到刚才完全一样的局面，这叫“打劫”。';speak($('#coachText').textContent);return}state.board=r.board;state.goHistory.push(goSerial(state.board));state.moves++;state.turn=2;$('#coachText').textContent=r.captured?`漂亮！你提走了 ${r.captured} 颗白棋。`:'落子后看看：这颗棋有几口气？';draw();updateTurn();setTimeout(goAI,430)}
+function goAI(){if(state.over)return;const moves=[];for(let y=0;y<9;y++)for(let x=0;x<9;x++){const r=goTry(state.board,x,y,2);if(r&&!goKo(r)){const libs=goGroup(r.board,x,y).libs.size,center=8-(Math.abs(x-4)+Math.abs(y-4));moves.push({x,y,r,score:r.captured*55+libs*3+center+Math.random()*10})}}if(!moves.length)return finishGo();let pick;if(state.level==='easy'&&Math.random()<.58)pick=moves[Math.floor(Math.random()*moves.length)];else pick=moves.sort((a,b)=>b.score-a.score)[0];state.board=pick.r.board;state.goHistory.push(goSerial(state.board));state.moves++;state.turn=1;draw();updateTurn();if(pick.r.captured){$('#coachText').textContent=`白棋提走了 ${pick.r.captured} 颗黑棋。别着急，先找危险棋子的气。`;speak($('#coachText').textContent)}if(state.moves>=75)finishGo()}
+function goScore(){const b=state.board,seen=new Set();let black=0,white=5.5;for(let y=0;y<9;y++)for(let x=0;x<9;x++){if(b[y][x]===1)black++;else if(b[y][x]===2)white++;else if(!seen.has(x+','+y)){const stack=[[x,y]],area=[],border=new Set();while(stack.length){const[a,c]=stack.pop(),k=a+','+c;if(seen.has(k))continue;seen.add(k);area.push([a,c]);goNeighbors(a,c).forEach(([nx,ny])=>{if(!b[ny][nx]){if(!seen.has(nx+','+ny))stack.push([nx,ny])}else border.add(b[ny][nx])})}if(border.size===1){if(border.has(1))black+=area.length;else white+=area.length}}}return{black,white}}
+function finishGo(){if(state.over)return;state.over=true;const s=goScore(),won=s.black>s.white;gameProgress().stars+=won?4:2;state.nextAction='restartBattle';save();showResult(won?'数子获胜！':'完成第一盘！',`黑棋 ${s.black} 分，白棋 ${s.white} 分。${won?'你围出的地盘更多！':'白棋暂时领先，下一盘试着先照顾危险的棋。'}`,won?4:2)}
+function drawGo(){const W=660,p=50,c=70,g=ctx.createLinearGradient(0,0,W,W);g.addColorStop(0,'#e5bb73');g.addColorStop(1,'#c99049');ctx.fillStyle=g;ctx.fillRect(0,0,W,W);ctx.strokeStyle='rgba(72,43,17,.72)';ctx.lineWidth=2.2;for(let i=0;i<9;i++){ctx.beginPath();ctx.moveTo(p,p+i*c);ctx.lineTo(p+8*c,p+i*c);ctx.stroke();ctx.beginPath();ctx.moveTo(p+i*c,p);ctx.lineTo(p+i*c,p+8*c);ctx.stroke()}[[2,2],[6,2],[4,4],[2,6],[6,6]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(p+x*c,p+y*c,5,0,Math.PI*2);ctx.fillStyle='#69421f';ctx.fill()});if(state.hint){ctx.beginPath();ctx.arc(p+state.hint.x*c,p+state.hint.y*c,29,0,Math.PI*2);ctx.strokeStyle='#ffcb31';ctx.lineWidth=7;ctx.setLineDash([8,6]);ctx.stroke();ctx.setLineDash([])}for(let y=0;y<9;y++)for(let x=0;x<9;x++)if(state.board[y][x])drawStone(p+x*c,p+y*c,29,state.board[y][x])}
+
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);if(state.game==='gomoku')drawGM();else if(state.game==='xiangqi')drawXQ();else drawGo()}
+function updateTurn(){if(state.mode==='lesson')return;if(state.game==='gomoku'){const me=state.turn===1;$('#turnBanner').innerHTML=`<span class="stone ${me?'black':'white'}"></span><b>${me?'轮到你啦':state.mode==='battle'?'电脑思考中…':'对手应对中…'}</b><small>${me?'你执黑棋':'请稍等'}</small>`}else if(state.game==='xiangqi'){const me=state.turn==='r';$('#turnBanner').innerHTML=`<span class="demo-piece" style="width:28px;height:28px;font-size:15px;border-width:2px">${me?'帥':'將'}</span><b>${me?'轮到红方啦':'黑方思考中…'}</b><small>${me?'先选棋子，再选位置':'请稍等'}</small>`}else{const me=state.turn===1;$('#turnBanner').innerHTML=`<span class="stone ${me?'black':'white'}"></span><b>${me?'轮到黑棋啦':'白棋思考中…'}</b><small>${me?'你执黑棋':'请稍等'}</small>`}if(state.mode==='battle')$('#moveCount').textContent=`已走 ${state.moves} ${state.game==='xiangqi'?'步':'手'}`}
+function finishPuzzle(){state.over=true;const p=stageProgress(),total=puzzleTotal(),wasNew=p.solved<total;if(wasNew)p.solved++;const multi=state.game==='gomoku'&&state.puzzle.steps.length>1;gameProgress().stars+=(multi?3:2);if(p.solved>=total&&p.lesson){if(state.stage<curriculum().length-1&&gameProgress().unlocked<=state.stage){gameProgress().unlocked=state.stage+1;state.stage++;state.nextAction='nextLesson';gameProgress().stars+=3;showResult('升级成功！',`新的课程“${currentStage().title}”解锁啦！`,5)}else{state.nextAction='course';showResult('阶段满星！','这一阶段的互动题全部完成，还可以随时回来复习。',4)}}else{state.nextAction='nextPuzzle';showResult(`第 ${Math.min(p.solved,total)} 题完成！`,state.game==='xiangqi'?'你不只记住了规则，还在棋盘上真正走对了。':multi?'你连续两步都想对了，这才是真正的计算。':'答对后再想一想，对手可能怎样回答。',multi?3:2)}save()}
+function finishBattle(won){state.over=true;gameProgress().stars+=won?4:1;state.nextAction='restartBattle';save();showResult(won?'实战获胜！':'这盘又进步了！',won?'你把学到的本领用进了真正的对局。':'输棋也是学习。复盘刚才的危险，再挑战一次。',won?4:1)}
+function showResult(title,text,reward){$('#resultTitle').textContent=title;$('#resultText').textContent=text;$('#rewardStars').textContent=reward;$('#continueBtn').textContent=state.nextAction==='nextLesson'?'学习新阶段 →':state.nextAction==='nextPuzzle'?'挑战下一题 →':state.nextAction==='restartBattle'?'再下一盘 →':'回到成长路线 →';$('#celebration').classList.add('show');speak(title+text)}
+function hint(){if(state.mode==='lesson'){$('#coachText').textContent=currentStage().rule}else if(state.mode==='battle'){if(state.game==='gomoku')$('#coachText').textContent='先检查电脑有没有四，再找自己的双重威胁。';else if(state.game==='xiangqi')$('#coachText').textContent=state.selected?'绿点都是这颗棋可以走的位置。先看看能不能吃子或将军。':'先检查自己的帅有没有危险，再找能吃子或将军的棋。';else $('#coachText').textContent='先看看有没有只剩一口气的棋，再想哪里能连接自己、围出地盘。'}else if(state.game==='gomoku'){const[x,y]=state.puzzle.steps[state.puzzleStep];state.hint={x,y};$('#coachText').textContent='红色虚线圈是关键点。想想它连接了哪些棋子？'}else if(state.game==='xiangqi'){state.hint=state.selected?{y:state.puzzle.to[0],x:state.puzzle.to[1]}:{y:state.puzzle.from[0],x:state.puzzle.from[1]};$('#coachText').textContent=state.selected?'黄色圈标出了目标位置。':'黄色圈标出了要先选择的棋子。'}else{const[x,y]=state.puzzle.to;state.hint={x,y};$('#coachText').textContent='黄色圈标出了关键交叉点。数一数落子前后的气。'}draw();speak($('#coachText').textContent)}
+
+canvas.addEventListener('click',e=>state.game==='gomoku'?gmClick(e):state.game==='xiangqi'?xqClick(e):goClick(e));
+$$('[data-open-game]').forEach(b=>b.onclick=()=>openGame(b.dataset.openGame));
+$('#brandHome').onclick=goHub;$('#hallBtn').onclick=goHub;$('#courseBack').onclick=goHub;$('#backCourse').onclick=()=>{window.speechSynthesis?.cancel();updateCourse();showView('courseView')};
+$('#startJourney').onclick=()=>setupMode(stageProgress().lesson?'puzzle':'lesson');$$('[data-mode]').forEach(b=>b.onclick=()=>setupMode(b.dataset.mode));
+$('#learnedBtn').onclick=()=>{if(!stageProgress().lesson){stageProgress().lesson=true;gameProgress().stars++}save();setupMode('puzzle')};
+$('#hintBtn').onclick=hint;$('#resetBtn').onclick=()=>setupMode(state.mode);$('#soundBtn').onclick=()=>{state.sound=!state.sound;$('#soundBtn').textContent=state.sound?'🔊':'🔇'};
+$('#passBtn').onclick=()=>{if(state.game==='go'&&state.mode==='battle')finishGo()};
+$('#continueBtn').onclick=()=>{const a=state.nextAction;$('#celebration').classList.remove('show');if(a==='nextLesson')setupMode('lesson');else if(a==='nextPuzzle')setupMode('puzzle');else if(a==='restartBattle')setupMode('battle');else{updateCourse();showView('courseView')}};
+$$('[data-level]').forEach(b=>b.onclick=()=>{state.level=b.dataset.level;syncLevel();if(state.mode==='battle')setupMode('battle')});
+updateHub();
