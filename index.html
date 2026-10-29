@@ -4,43 +4,44 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#fff8ec">
-  <title>小棋星乐园｜五子棋、中国象棋与围棋</title>
-  <meta name="description" content="给小学生的五子棋、中国象棋与围棋分步学习、闯关和对战平台">
+  <title>小棋星乐园｜棋类与魔方儿童学习平台</title>
+  <meta name="description" content="给小学生的五子棋、中国象棋、围棋与三阶魔方分步学习、闯关和挑战平台">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <button class="brand" id="brandHome" aria-label="回到棋类大厅"><span class="brand-mark" aria-hidden="true">★</span><span><strong>小棋星乐园</strong><small>会思考，也会快乐</small></span></button>
-      <div class="top-actions"><button class="hall-btn hidden" id="hallBtn">⌂ 棋类大厅</button><div class="player-stats" aria-label="学习进度"><span class="stat-pill"><span aria-hidden="true">⭐</span><b id="totalStars">0</b></span><span class="stat-pill streak"><span aria-hidden="true">🔥</span><b id="streakCount">1</b> 天</span></div></div>
+      <button class="brand" id="brandHome" aria-label="回到乐园大厅"><span class="brand-mark" aria-hidden="true">★</span><span><strong>小棋星乐园</strong><small>会思考，也会快乐</small></span></button>
+      <div class="top-actions"><button class="hall-btn hidden" id="hallBtn">⌂ 乐园大厅</button><div class="player-stats" aria-label="学习进度"><span class="stat-pill"><span aria-hidden="true">⭐</span><b id="totalStars">0</b></span><span class="stat-pill streak"><span aria-hidden="true">🔥</span><b id="streakCount">1</b> 天</span></div></div>
     </header>
 
     <main>
       <section class="view active" id="hubView">
         <div class="hub-hero">
-          <div><span class="eyebrow">专属儿童棋类成长平台</span><h1>今天想挑战<br><em>哪一种棋？</em></h1><p>从零开始，一小步一小步学会规则、思考和实战。每次练习 10 分钟，就能收集新的星星。</p></div>
+          <div><span class="eyebrow">专属儿童智慧成长平台</span><h1>今天想挑战<br><em>哪一个项目？</em></h1><p>从零开始，一小步一小步学会规则、思考和动手实践。每次练习 10 分钟，就能收集新的星星。</p></div>
           <div class="orbit-scene" aria-hidden="true"><div class="orbit orbit-one"><span class="mini-piece black-piece">車</span></div><div class="orbit orbit-two"><span class="mini-stone"></span></div><div class="hub-star">★<i>◡</i></div></div>
         </div>
         <section class="choose-section" aria-labelledby="chooseTitle">
-          <div class="section-heading"><div><span class="section-kicker">我的棋类世界</span><h2 id="chooseTitle">选择一个冒险</h2></div><span class="progress-copy">三种棋，训练三种思考方式</span></div>
+          <div class="section-heading"><div><span class="section-kicker">我的智慧世界</span><h2 id="chooseTitle">选择一个冒险</h2></div><span class="progress-copy">棋类与魔方，训练观察、推理和空间想象</span></div>
           <div class="game-choice-grid">
             <button class="game-choice gomoku-choice" data-open-game="gomoku"><span class="choice-art gomoku-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="choice-copy"><span class="choice-kicker">观察与计算</span><strong>五子棋冒险</strong><small>发现关键点，练习连续进攻</small><span class="choice-progress"><b id="gomokuHubProgress">0%</b><i><u id="gomokuHubBar"></u></i></span><em>进入学习 →</em></span></button>
             <button class="game-choice xiangqi-choice" data-open-game="xiangqi"><span class="choice-art xiangqi-art" aria-hidden="true"><i>帥</i><i>馬</i><i>炮</i></span><span class="choice-copy"><span class="choice-kicker">规则与策略</span><strong>中国象棋学堂</strong><small>从认识棋盘到挑战电脑</small><span class="choice-progress"><b id="xiangqiHubProgress">0%</b><i><u id="xiangqiHubBar"></u></i></span><em>开始启蒙 →</em></span></button>
             <button class="game-choice go-choice" data-open-game="go"><span class="choice-art go-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="choice-copy"><span class="choice-kicker">气与地盘</span><strong>围棋启蒙岛</strong><small>从第一口气到 9 路小对局</small><span class="choice-progress"><b id="goHubProgress">0%</b><i><u id="goHubBar"></u></i></span><em>登岛学习 →</em></span></button>
+            <button class="game-choice cube-choice" data-open-game="cube"><span class="choice-art cube-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="choice-copy"><span class="choice-kicker">空间与记忆</span><strong>魔方成长营</strong><small>从看懂颜色到独立复原三阶魔方</small><span class="choice-progress"><b id="cubeHubProgress">0%</b><i><u id="cubeHubBar"></u></i></span><em>开始转动 →</em></span></button>
           </div>
         </section>
-        <section class="parent-note"><span>🌱</span><div><b>给家长的小提示</b><p>每种棋都从第 1 站开始。鼓励孩子说出“我为什么走这一步”，比只看输赢更重要。</p></div></section>
-        <details class="strategy-sources"><summary>🧠 专业策略参考（给家长）</summary><p>平台采用独立的儿童版轻量实现：五子棋参考 <a href="https://github.com/dotb1ue/rapfi" target="_blank" rel="noopener">Rapfi</a> 的威胁评估与 Alpha-Beta 思路；象棋参考 <a href="https://github.com/fairy-stockfish/Fairy-Stockfish" target="_blank" rel="noopener">Fairy-Stockfish</a> 的走法排序与局面搜索；围棋参考 <a href="https://github.com/lightvector/KataGo" target="_blank" rel="noopener">KataGo</a> 的蒙特卡洛搜索、气与地盘评估。未嵌入第三方引擎代码或模型。</p></details>
+        <section class="parent-note"><span>🌱</span><div><b>给家长的小提示</b><p>每个项目都从第 1 站开始。鼓励孩子说出“我为什么这样做”，比只看输赢或速度更重要。</p></div></section>
+        <details class="strategy-sources"><summary>🧠 专业策略参考（给家长）</summary><p>平台采用独立的儿童版轻量实现：五子棋参考 <a href="https://github.com/dotb1ue/rapfi" target="_blank" rel="noopener">Rapfi</a>；象棋参考 <a href="https://github.com/fairy-stockfish/Fairy-Stockfish" target="_blank" rel="noopener">Fairy-Stockfish</a>；围棋参考 <a href="https://github.com/lightvector/KataGo" target="_blank" rel="noopener">KataGo</a>；魔方参考 <a href="https://github.com/cubing/cubing.js" target="_blank" rel="noopener">cubing.js</a> 的转动表示、<a href="https://github.com/ldez/cubejs" target="_blank" rel="noopener">cube.js</a> 的状态模型与 <a href="https://github.com/hkociemba/RubiksCube-TwophaseSolver" target="_blank" rel="noopener">Kociemba 两阶段求解器</a> 的分阶段思想。未嵌入第三方引擎代码或模型。</p></details>
       </section>
 
       <section class="view" id="courseView">
-        <div class="course-hero" id="courseHero"><div class="course-copy"><button class="crumb" id="courseBack">← 返回棋类大厅</button><span class="eyebrow" id="courseBadge">第 1 阶段</span><h1 id="courseTitle">认识棋盘</h1><p id="courseDesc">先认识我们的战场，再学第一颗棋子怎么走。</p><button class="primary-btn" id="startJourney">开始今天的学习 <span>→</span></button></div><div class="course-symbol" id="courseSymbol" aria-hidden="true">帥</div></div>
+        <div class="course-hero" id="courseHero"><div class="course-copy"><button class="crumb" id="courseBack">← 返回乐园大厅</button><span class="eyebrow" id="courseBadge">第 1 阶段</span><h1 id="courseTitle">认识棋盘</h1><p id="courseDesc">先认识我们的战场，再学第一颗棋子怎么走。</p><button class="primary-btn" id="startJourney">开始今天的学习 <span>→</span></button></div><div class="course-symbol" id="courseSymbol" aria-hidden="true">帥</div></div>
         <section class="today-section">
           <div class="section-heading"><div><span class="section-kicker" id="gameLabel">中国象棋</span><h2>今天的三步训练</h2></div><span class="progress-copy"><b id="stagePercent">0</b>% 完成</span></div>
           <div class="mission-grid">
             <button class="mission-card mint" data-mode="lesson"><span class="mission-number">01</span><span class="mission-icon">💡</span><span class="mission-tag">学一招 · 3分钟</span><strong id="lessonCardTitle">认识棋盘</strong><span id="lessonCardDesc">先看懂规则，再动手</span><i class="mission-status">去学习 →</i></button>
             <button class="mission-card coral" data-mode="puzzle"><span class="mission-number">02</span><span class="mission-icon">🏆</span><span class="mission-tag" id="puzzleCardTag">互动闯关 · 0/4</span><strong id="puzzleCardTitle">棋子走法练习</strong><span id="puzzleCardDesc">在棋盘上亲手走一走</span><i class="mission-status">开始闯关 →</i></button>
-            <button class="mission-card purple" data-mode="battle"><span class="mission-number">03</span><span class="mission-icon">🚀</span><span class="mission-tag">自由对战 · 随时可玩</span><strong id="battleCardTitle">挑战小小电脑</strong><span>把学会的招式用进棋局</span><i class="mission-status">去对战 →</i></button>
+            <button class="mission-card purple" data-mode="battle"><span class="mission-number">03</span><span class="mission-icon">🚀</span><span class="mission-tag" id="battleCardTag">自由对战 · 随时可玩</span><strong id="battleCardTitle">挑战小小电脑</strong><span id="battleCardDesc">把学会的招式用进棋局</span><i class="mission-status" id="battleCardAction">去对战 →</i></button>
           </div>
         </section>
         <section class="skill-road"><div class="section-heading"><div><span class="section-kicker">成长路线</span><h2 id="roadTitle">六站象棋启蒙</h2></div><span class="progress-copy">完成一站，自动开启下一站</span></div><div class="stage-path" id="stagePath" aria-label="课程阶段"></div></section>
@@ -50,8 +51,8 @@
         <div class="game-heading"><button class="back-btn" id="backCourse">← 返回课程</button><div><span class="section-kicker" id="modeKicker">互动闯关</span><h1 id="modeTitle">棋子走法练习</h1></div><button class="sound-btn" id="soundBtn" aria-label="开关声音">🔊</button></div>
         <div class="game-layout">
           <aside class="coach-card"><div class="coach-avatar" id="coachAvatar">★</div><div><span class="coach-name">星星教练</span><p id="coachText">先选中一颗棋，再点它要去的位置。</p></div><div class="coach-actions"><button id="hintBtn">💡 给我提示</button><button id="resetBtn">↻ 重新开始</button><button id="passBtn" class="hidden">🏁 结束并数子</button></div></aside>
-          <div class="board-panel"><div class="turn-banner" id="turnBanner"><b>轮到你啦</b><small>红方先行</small></div><div class="board-wrap" id="boardWrap"><canvas id="board" width="660" height="660" aria-label="棋盘"></canvas><div class="lesson-panel" id="lessonPanel"><span class="lesson-chip">今天的新本领</span><h2 id="lessonTitle">认识棋盘</h2><p id="lessonText"></p><div class="piece-demo" id="pieceDemo"></div><div class="lesson-rule" id="lessonRule"></div><button class="primary-btn" id="learnedBtn">我学会了，去闯关 →</button></div><div class="celebration" id="celebration" aria-live="polite"><div class="celebration-star">★</div><h2 id="resultTitle">太棒啦！</h2><p id="resultText">你找到了正确走法</p><div class="reward">+ <b id="rewardStars">2</b> ⭐</div><button class="primary-btn" id="continueBtn">继续冒险 →</button></div></div><div class="board-footer"><span id="moveCount">第 1 / 4 题</span><span id="puzzleProgress">先选中棋子，再选择落点</span></div></div>
-          <aside class="level-card"><span class="section-kicker">电脑难度</span><h3>选择挑战伙伴</h3><div class="level-options"><button data-level="easy" class="active"><span>🐣</span><b>小鸡</b><small>适合第一次对战</small></button><button data-level="medium"><span>🦊</span><b>狐狸</b><small>会主动吃子</small></button><button data-level="hard"><span>🦁</span><b>狮子</b><small>会寻找将军</small></button></div><div class="tiny-rule" id="tinyRule"><b>记住：</b>红方先走。点击棋子后，绿色圆点就是可以走的位置。</div></aside>
+          <div class="board-panel"><div class="turn-banner" id="turnBanner"><b>轮到你啦</b><small>红方先行</small></div><div class="board-wrap" id="boardWrap"><canvas id="board" width="660" height="660" aria-label="互动练习区"></canvas><div class="lesson-panel" id="lessonPanel"><span class="lesson-chip">今天的新本领</span><h2 id="lessonTitle">认识棋盘</h2><p id="lessonText"></p><div class="piece-demo" id="pieceDemo"></div><div class="lesson-rule" id="lessonRule"></div><button class="primary-btn" id="learnedBtn">我学会了，去闯关 →</button></div><div class="celebration" id="celebration" aria-live="polite"><div class="celebration-star">★</div><h2 id="resultTitle">太棒啦！</h2><p id="resultText">你找到了正确走法</p><div class="reward">+ <b id="rewardStars">2</b> ⭐</div><button class="primary-btn" id="continueBtn">继续冒险 →</button></div></div><div class="cube-controls hidden" id="cubeControls" aria-label="魔方转动按钮"></div><div class="board-footer"><span id="moveCount">第 1 / 4 题</span><span id="puzzleProgress">先选中棋子，再选择落点</span></div></div>
+          <aside class="level-card"><span class="section-kicker" id="levelKicker">电脑难度</span><h3 id="levelTitle">选择挑战伙伴</h3><div class="level-options"><button data-level="easy" class="active"><span>🐣</span><b>小鸡</b><small>适合第一次对战</small></button><button data-level="medium"><span>🦊</span><b>狐狸</b><small>会主动吃子</small></button><button data-level="hard"><span>🦁</span><b>狮子</b><small>会寻找将军</small></button></div><div class="tiny-rule" id="tinyRule"><b>记住：</b>红方先走。点击棋子后，绿色圆点就是可以走的位置。</div></aside>
         </div>
       </section>
     </main>
