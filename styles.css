@@ -20,3 +20,4 @@
 @media(max-width:1120px){.game-choice-grid{grid-template-columns:repeat(2,1fr)}.game-choice{grid-template-columns:1fr;min-height:420px}.choice-copy{padding:18px 6px 4px}}
 @media(max-width:760px){.game-choice-grid{grid-template-columns:1fr}.game-choice{min-height:265px;grid-template-columns:38% 62%;padding:22px}.choice-art{height:190px}.choice-copy{padding:10px 6px 10px 20px}}
 @media(max-width:480px){.game-choice{grid-template-columns:1fr;text-align:center}.choice-art{width:210px;margin:auto}.choice-copy{padding:18px 4px 2px}}
+.strategy-sources{margin:14px 0 28px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 18px;color:#53645e;box-shadow:0 6px 18px rgba(62,44,18,.05)}.strategy-sources summary{cursor:pointer;font-weight:900;color:#344642}.strategy-sources p{margin:10px 0 0;line-height:1.75;font-size:13px}.strategy-sources a{color:var(--orange);font-weight:800;text-decoration:none}.strategy-sources a:hover{text-decoration:underline}
